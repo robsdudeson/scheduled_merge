@@ -4,15 +4,14 @@ defmodule ScheduledMerge do
   """
 
   @doc """
-  Hello world.
-
+  run the scheduled merge tool
   ## Examples
 
-      iex> ScheduledMerge.hello()
-      :world
+      iex> ScheduledMerge.run()
+      :ok
 
   """
-  def hello do
-    :world
+  def run() do
+    :ok
   end
 end
