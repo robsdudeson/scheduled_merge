@@ -25,7 +25,8 @@ defmodule ScheduledMerge.MixProject do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
-      {:httpoison, "~> 1.8"}
+      {:httpoison, "~> 1.8"},
+      {:jason, "~> 1.4"}
     ]
   end
 
