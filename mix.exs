@@ -4,6 +4,7 @@ defmodule ScheduledMerge.MixProject do
   def project do
     [
       app: :scheduled_merge,
+      compilers: Mix.compilers(),
       deps: deps(),
       description: "merges github pull requests based on labels",
       elixir: "~> 1.13",
@@ -24,6 +25,7 @@ defmodule ScheduledMerge.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:dotenvy, "~> 0.6.0"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:httpoison, "~> 1.8"},
       {:jason, "~> 1.4"}
