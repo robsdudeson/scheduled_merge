@@ -26,6 +26,24 @@ defmodule ScheduledMerge.Github.Client do
     end
   end
 
+  def comment_issue(%{"number" => number}, comment, org, repo, url_base, token) do
+    headers = [
+      {"accept", "application/vnd.github+json"},
+      {"authorization", "Bearer #{token}"}
+    ]
+
+    body =
+      Jason.encode!(%{
+        body: comment
+      })
+
+    "#{url_base}/repos/#{org}/#{repo}/issues/#{number}/comments"
+    |> HTTPoison.post!(body, headers)
+    |> case do
+      %{status_code: 201} -> :ok
+    end
+  end
+
   def delete_label(%{"name" => label_name}, org, repo, url_base, token) do
     headers = [
       {"accept", "application/vnd.github+json"},
