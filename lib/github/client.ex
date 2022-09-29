@@ -12,4 +12,17 @@ defmodule ScheduledMerge.Github.Client do
         Jason.decode!(body)
     end
   end
+
+  def delete_label(%{"name" => label_name}, org, repo, url_base, token) do
+    headers = [
+      {"accept", "application/vnd.github+json"},
+      {"authorization", "Bearer #{token}"}
+    ]
+
+    "#{url_base}/repos/#{org}/#{repo}/labels/#{label_name}"
+    |> HTTPoison.delete!(headers)
+    |> case do
+      %{status_code: 204} -> :ok
+    end
+  end
 end
