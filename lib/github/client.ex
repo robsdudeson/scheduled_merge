@@ -99,6 +99,7 @@ defmodule ScheduledMerge.Github.Client do
     |> HTTPoison.get!(headers)
     |> case do
       %{status_code: 200, body: body} -> Jason.decode!(body)
+      %{status_code: 404} -> nil
     end
   end
 
