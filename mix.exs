@@ -8,6 +8,7 @@ defmodule ScheduledMerge.MixProject do
       deps: deps(),
       description: "merges github pull requests based on labels",
       elixir: "~> 1.13",
+      elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       start_permanent: Mix.env() == :prod,
       source_url: github_url(),
@@ -31,6 +32,9 @@ defmodule ScheduledMerge.MixProject do
       {:jason, "~> 1.4"}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp package do
     [
