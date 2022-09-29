@@ -27,7 +27,9 @@ defmodule ScheduledMerge.MixProject do
   defp deps do
     [
       {:dotenvy, "~> 0.6.0"},
+      {:double, "~> 0.8.2", only: [:dev, :test], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:inject, "~> 0.4.0"},
       {:httpoison, "~> 1.8"},
       {:jason, "~> 1.4"}
     ]
