@@ -24,7 +24,8 @@ defmodule ScheduledMerge.Github.Label do
 
   def present_merge_label?(_, _), do: false
 
-  defp default_merge_color,
+  @doc false
+  def default_merge_color,
     do: Application.get_env(:scheduled_merge, :labels)[:default_merge_label][:color]
 
   defp default_error_label,
