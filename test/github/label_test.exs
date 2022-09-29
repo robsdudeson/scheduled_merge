@@ -5,14 +5,6 @@ defmodule ScheduledMerge.Github.LabelTest do
 
   alias ScheduledMerge.Github.Label
 
-  # doctest Label
-
-  describe "default_merge_color/0" do
-    test "there is a default merge color" do
-      assert Label.default_merge_color() == "FFFFFF"
-    end
-  end
-
   describe "merge_label/1" do
     test "produces a valid label name" do
       date = Date.from_iso8601!("2022-01-01")

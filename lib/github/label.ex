@@ -1,24 +1,4 @@
 defmodule ScheduledMerge.Github.Label do
-  @default_merge_color "FFFFFF"
-
-  @default_error_label %{
-    "name" => "merge-error",
-    "description" => "indicates when scheduled merge does not work",
-    "color" => "FF0000"
-  }
-
-  def default_merge_color do
-    @default_merge_color
-  end
-
-  def default_error_label do
-    @default_error_label
-  end
-
-  def error_label_name do
-    @default_error_label["name"]
-  end
-
   def merge_label(date) do
     date = Date.to_iso8601(date)
     %{"name" => "merge-#{date}", "color" => default_merge_color()}
@@ -43,4 +23,10 @@ defmodule ScheduledMerge.Github.Label do
   end
 
   def present_merge_label?(_, _), do: false
+
+  defp default_merge_color,
+    do: Application.get_env(:scheduled_merge, :labels)[:default_merge_label][:color]
+
+  defp default_error_label,
+    do: Application.get_env(:scheduled_merge, :labels)[:default_error_label]
 end
