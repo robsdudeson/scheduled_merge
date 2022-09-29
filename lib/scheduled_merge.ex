@@ -8,7 +8,8 @@ defmodule ScheduledMerge do
   alias ScheduledMerge.Github.Pull
   alias ScheduledMerge.Github.Label
 
-  @github_token_default ""
+  # TODO: config handling
+  @github_token_default "redacted"
   @github_api_url_default "https://api.github.com"
   @org_default "robsdudeson"
   @repo_default "scheduled_merge"
@@ -29,35 +30,76 @@ defmodule ScheduledMerge do
         date \\ nil
       ) do
     date = date || Date.utc_today()
+    error_label = fetch_or_create_error_label(org, repo, api_url, api_token)
 
-    # get all pulls
-    pulls = Github.fetch_pulls(org, repo, api_url, api_token)
+    merge_errors =
+      org
+      |> Github.fetch_pulls(repo, api_url, api_token)
+      |> Pull.present_pulls(date)
+      |> merge_pulls(error_label, org, repo, api_url, api_token)
 
-    # filter pulls to merge
-    Pull.present_pulls(pulls, date) |> IO.inspect(label: "todays_pulls")
+    label_errors =
+      org
+      |> Github.fetch_labels(repo, api_url, api_token)
+      |> Label.past_labels(date)
+      |> clean_labels(org, repo, api_url, api_token)
 
-    # filter past_pulls to clean up
-    past_pulls =
-      Pull.past_pulls(pulls, date)
-      |> IO.inspect(label: "past_pulls")
-
-    # filter list of labels to clean up
-    _past_labels =
-      past_labels(past_pulls, date)
-      |> IO.inspect(label: "past_labels")
-
-    # TODO: attempt to clean up pulls with past label
-    # TODO: aggregate results
-    # TODO: attempt to merge todays_pulls
-    # TODO: aggregate results
-    # TODO: return tuple with results
-    {:ok, "ok"}
+    (merge_errors ++ label_errors)
+    |> case do
+      [] -> :ok
+      errors -> {:error, errors}
+    end
   end
 
-  defp past_labels(pulls, date) do
+  defp clean_labels([], _, _, _, _), do: :ok
+
+  defp clean_labels(labels, org, repo, api_url, api_token) do
+    labels
+    |> Enum.reduce([], fn label, errors ->
+      label
+      |> Github.delete_label(org, repo, api_url, api_token)
+      |> case do
+        :ok -> errors
+        _ -> [{label["name"], :label_delete_error}] ++ errors
+      end
+    end)
+  end
+
+  defp merge_pulls(pulls, error_label, org, repo, api_url, api_token) do
     pulls
-    |> Enum.map(fn %{"labels" => labels} -> labels end)
-    |> List.flatten()
-    |> Enum.filter(&Label.past_merge_label?(&1, date))
+    |> Enum.reduce([], fn pull, errors ->
+      pull
+      |> Github.merge_pull(org, repo, api_url, api_token)
+      |> case do
+        :ok ->
+          errors
+
+        _ ->
+          :ok = Github.label_issue(pull, error_label, org, repo, api_url, api_token)
+
+          :ok =
+            Github.comment_issue(
+              pull,
+              "there was an error merging this with scheduled_merge",
+              org,
+              repo,
+              api_url,
+              api_token
+            )
+
+          [{pull["number"], :merge_error}] ++ errors
+      end
+    end)
+  end
+
+  defp fetch_or_create_error_label(org, repo, api_url, api_token) do
+    error_label_name = Label.error_label_name()
+
+    error_label_name
+    |> Github.fetch_label(org, repo, api_url, api_token)
+    |> case do
+      %{"name" => ^error_label_name} = label -> label
+      _ -> :ok = Github.create_label(error_label_name, org, repo, api_url, api_token)
+    end
   end
 end

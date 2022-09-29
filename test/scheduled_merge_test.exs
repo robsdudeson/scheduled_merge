@@ -3,6 +3,6 @@ defmodule ScheduledMergeTest do
   doctest ScheduledMerge
 
   test "run the tool" do
-    assert ScheduledMerge.run() == :ok
+    assert ScheduledMerge.run() == {:ok, "ok"}
   end
 end
