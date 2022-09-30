@@ -1,4 +1,7 @@
 defmodule ScheduledMerge.Github.Pull do
+  @moduledoc """
+  Functions to mange pulls from GitHub
+  """
   alias ScheduledMerge.Github.Label
 
   def present?(%{"labels" => labels}, date) do

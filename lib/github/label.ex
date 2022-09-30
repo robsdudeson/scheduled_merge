@@ -1,4 +1,8 @@
 defmodule ScheduledMerge.Github.Label do
+  @moduledoc """
+  Collection of functions to manage labels in github
+  """
+
   require Logger
 
   import Inject, only: [i: 1]

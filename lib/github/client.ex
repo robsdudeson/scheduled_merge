@@ -1,4 +1,7 @@
 defmodule ScheduledMerge.Github.Client do
+  @moduledoc """
+  GitHub API wrapper
+  """
   require Logger
 
   def fetch_pulls do
