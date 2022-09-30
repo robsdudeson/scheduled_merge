@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+echo '🔭 checking formatting...'
+mix format --check-formatted
+echo '✅ Formatting Looks Good!'
+
+echo '🔬 checking dialyxir'
+mix dialyzer
+echo '✅ dialyxir Looks Good!'
+
+echo '👓 checking credo'
+mix credo
+echo '✅ credo Looks Good!'
+
+echo '🔒 checking sobelow'
+mix sobelow --config
+echo '✅ sobelow Looks Good!'
+
+echo '📋 Running Tests...'
+mix test
+echo '✅ Tests Complete!'
