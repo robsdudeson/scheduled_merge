@@ -1,4 +1,7 @@
 defmodule ScheduledMerge.Support.Fixtures do
+  @moduledoc """
+  collection of data fixtures for tests
+  """
   alias ScheduledMerge.Github.Label
 
   def label_fixture(name) do

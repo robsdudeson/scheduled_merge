@@ -1,4 +1,7 @@
 defmodule ScheduledMerge.Github.Label do
+  @moduledoc """
+  Collection of functions to manage labels in github
+  """
   def merge_label(date) do
     date = Date.to_iso8601(date)
     %{"name" => "merge-#{date}", "color" => default_merge_color()}

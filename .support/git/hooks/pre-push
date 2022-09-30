@@ -1,0 +1,7 @@
+#!/bin/sh
+
+SCRIPT_DIR=$(cd `dirname $0` && pwd)/../../script
+
+$SCRIPT_DIR/test
+
+exit 0

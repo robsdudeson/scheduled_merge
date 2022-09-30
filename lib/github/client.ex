@@ -1,4 +1,7 @@
 defmodule ScheduledMerge.Github.Client do
+  @moduledoc """
+  GitHub API wrapper
+  """
   def fetch_pulls do
     "/pulls"
     |> resource_url()
