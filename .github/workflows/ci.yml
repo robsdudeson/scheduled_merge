@@ -30,5 +30,6 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
+      - run: cp .env.example .env
       - run: mix deps.get
       - run: ./script/test
