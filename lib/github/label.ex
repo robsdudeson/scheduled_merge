@@ -1,4 +1,36 @@
 defmodule ScheduledMerge.Github.Label do
+  require Logger
+
+  import Inject, only: [i: 1]
+
+  alias ScheduledMerge.Github.Client, as: Github
+
+  def delete_past_labels(date) do
+    i(Github).fetch_labels()
+    |> past_labels(date)
+    |> delete_labels()
+  end
+
+  @doc """
+  given a list of labels, attempt to delete them
+  """
+  @spec delete_labels(list(map())) :: [] | list({String.t(), :label_delete_error})
+  def delete_labels(labels) do
+    labels
+    |> Enum.reduce([], fn label, errors ->
+      label
+      |> i(Github).delete_label()
+      |> case do
+        :ok ->
+          errors
+
+        _ ->
+          Logger.error("Failed to delete label: '#{label["name"]}'")
+          [{label["name"], :label_delete_error}] ++ errors
+      end
+    end)
+  end
+
   def merge_label(date) do
     date = Date.to_iso8601(date)
     %{"name" => "merge-#{date}", "color" => default_merge_color()}
