@@ -1,4 +1,6 @@
 defmodule ScheduledMerge.Github.Client do
+  require Logger
+
   def fetch_pulls do
     "/pulls"
     |> resource_url()
@@ -75,12 +77,22 @@ defmodule ScheduledMerge.Github.Client do
     end
   end
 
+  @doc """
+  will call GitHub to attempt to delete the label
+  """
+  @spec delete_label(map) :: :ok | {:error, list(tuple())}
   def delete_label(%{"name" => label_name}) do
     "/labels/#{label_name}"
     |> resource_url()
     |> HTTPoison.delete!(headers())
     |> case do
-      %{status_code: 204} -> :ok
+      %{status_code: 204} ->
+        :ok
+
+      response ->
+        message = "there was an error deleting the label"
+        Logger.error("#{message}:#{label_name}", response)
+        {:error, {label_name, message}}
     end
   end
 
