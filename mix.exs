@@ -8,6 +8,9 @@ defmodule ScheduledMerge.MixProject do
       deps: deps(),
       description: "merges github pull requests based on labels",
       elixir: "~> 1.13",
+      elixirc_options: [
+        warnings_as_errors: elixirc_warnings_as_errors?(Mix.env())
+      ],
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       start_permanent: Mix.env() == :prod,
@@ -38,6 +41,9 @@ defmodule ScheduledMerge.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp elixirc_warnings_as_errors?(env) when env in [:dev, :test], do: false
+  defp elixirc_warnings_as_errors?(_), do: true
 
   defp package do
     [
