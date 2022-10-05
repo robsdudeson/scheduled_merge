@@ -1,9 +1,36 @@
 defmodule ScheduledMerge.Github.LabelTest do
   use ExUnit.Case
 
+  import ExUnit.CaptureLog, only: [capture_log: 1]
+  import Double, only: [stub: 3]
+  import Inject, only: [register: 2]
   import ScheduledMerge.Support.Fixtures
 
+  alias ScheduledMerge.Github.Client, as: Github
   alias ScheduledMerge.Github.Label
+
+  describe "delete_labels/1" do
+    setup [:setup_github_client]
+
+    setup _ do
+      [label: label_fixture("test-label")]
+    end
+
+    test "it invokes adapter to delete labels", %{label: label} do
+      assert Label.delete_labels([label]) == []
+    end
+
+    @tag delete_label_result: :error
+    test "it invokes adapter to delete labels, the adapter returns an error", %{label: label} do
+      assert capture_log(fn ->
+               assert Label.delete_labels([label]) == [{"test-label", :label_delete_error}]
+             end) =~ "Failed to delete label: 'test-label'"
+    end
+
+    test "no labels are passed" do
+      assert Label.delete_labels([]) == []
+    end
+  end
 
   describe "merge_label/1" do
     test "produces a valid label name" do
@@ -92,5 +119,19 @@ defmodule ScheduledMerge.Github.LabelTest do
                      Label.past_merge_label?(label, date)
                    end
     end
+  end
+
+  defp setup_github_client(context) do
+    stub =
+      stub(Github, :delete_label, fn _label ->
+        case context[:delete_label_result] do
+          nil -> :ok
+          :error -> {:error, {"a-label-name", "there was an error deleting the label"}}
+        end
+      end)
+
+    register(Github, stub)
+
+    []
   end
 end

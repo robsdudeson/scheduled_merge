@@ -31,8 +31,10 @@ defmodule ScheduledMerge.MixProject do
     [
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dotenvy, "~> 0.6.0"},
+      {:double, "~> 0.8.2", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:inject, "~> 0.4.0"},
       {:httpoison, "~> 1.8"},
       {:jason, "~> 1.4"},
       {:sobelow, "~> 0.8", only: :dev, runtime: false}
