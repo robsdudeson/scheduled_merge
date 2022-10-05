@@ -14,13 +14,24 @@ defmodule ScheduledMerge.Github.Client do
     end
   end
 
-  def merge_pull(%{"number" => number}) do
+  def merge_pull(%{"number" => number} = pull) do
     "/pulls/#{number}/merge"
     |> resource_url()
     |> HTTPoison.put!(headers())
     |> case do
       %{status_code: 200} -> :ok
+      %{status_code: 403} = response -> merge_pull_error(response, pull, :forbidden)
+      %{status_code: 404} = response -> merge_pull_error(response, pull, :not_found)
+      %{status_code: 405} = response -> merge_pull_error(response, pull, :method_not_allowed)
+      %{status_code: 409} = response -> merge_pull_error(response, pull, :sha_head_mismatch)
+      %{status_code: 422} = response -> merge_pull_error(response, pull, :request_invalid)
     end
+  end
+
+  defp merge_pull_error(response, %{"number" => number}, error) do
+    message = "there was an error merging the pull"
+    Logger.error("#{message}:#{number}:#{error}", response)
+    {:error, {number, message}}
   end
 
   def comment_issue(%{"number" => number}, comment) do

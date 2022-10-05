@@ -5,6 +5,7 @@ defmodule ScheduledMerge do
   import Inject, only: [i: 1]
 
   alias ScheduledMerge.Github.Label
+  alias ScheduledMerge.Github.Pull
 
   @doc """
   run the scheduled merge tool
@@ -16,8 +17,10 @@ defmodule ScheduledMerge do
     date = date_from_opts(opts)
 
     label_errors = i(Label).delete_past_labels(date)
+    merge_errors = i(Pull).merge_todays_pulls(date)
 
-    case label_errors do
+    (label_errors ++ merge_errors)
+    |> case do
       [] -> :ok
       errors -> {:error, errors}
     end

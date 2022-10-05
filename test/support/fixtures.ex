@@ -9,6 +9,6 @@ defmodule ScheduledMerge.Support.Fixtures do
   end
 
   def pull_fixture(labels \\ []) do
-    %{"labels" => labels}
+    %{"labels" => labels, "number" => :rand.uniform(999)}
   end
 end
