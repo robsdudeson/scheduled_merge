@@ -25,14 +25,41 @@ defmodule ScheduledMerge.Github.Pull do
         :ok ->
           errors
 
-        _ ->
-          Logger.error("Failed to merge pull: '##{pull["number"]}'")
+        {:error, reason} ->
+          message = "Failed to merge pull: '##{pull["number"]}' - #{reason}"
+          Logger.error(message)
+          comment_error(pull, message)
+          label_error(pull)
           [{pull["number"], :pull_merge_error}] ++ errors
       end
     end)
   end
 
   def present_pulls(pulls, date), do: Enum.filter(pulls, &present?(&1, date))
+
+  defp comment_error(pull, message) do
+    pull
+    |> i(Github).comment_issue(message)
+    |> case do
+      :ok ->
+        :ok
+
+      {:error, _reason} ->
+        Logger.error("Failed to add error comment to pull '##{pull["number"]}'")
+    end
+  end
+
+  defp label_error(pull) do
+    pull
+    |> i(Github).label_issue(i(Label).error_label()["name"])
+    |> case do
+      :ok ->
+        :ok
+
+      {:error, _reason} ->
+        Logger.error("Failed to add error label to pull '##{pull["number"]}'")
+    end
+  end
 
   defp present?(%{"labels" => []}, _date), do: false
 

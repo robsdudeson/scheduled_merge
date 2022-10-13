@@ -22,12 +22,38 @@ defmodule ScheduledMerge.Github.PullTest do
     @tag merge_pull_result: :error
     test "it aggregates any errors" do
       pulls = [pull] = [pull_fixture()]
+      expected_error_message = "Failed to merge pull: '##{pull["number"]}' - error_reason"
 
       assert capture_log(fn ->
                assert Pull.merge_pulls(pulls) == [{pull["number"], :pull_merge_error}]
-             end) =~ "Failed to merge pull: '##{pull["number"]}'"
+             end) =~ expected_error_message
 
       assert_received {ScheduledMerge.Github.Client, :merge_pull, [^pull]}
+
+      assert_received {ScheduledMerge.Github.Client, :comment_issue,
+                       [^pull, ^expected_error_message]}
+
+      assert_received {ScheduledMerge.Github.Client, :label_issue, [^pull]}
+    end
+
+    @tag merge_pull_result: :error
+    @tag comment_issue_result: :error
+    test "it logs errors adding commenting errors" do
+      pulls = [pull] = [pull_fixture()]
+
+      assert capture_log(fn ->
+               assert Pull.merge_pulls(pulls) == [{pull["number"], :pull_merge_error}]
+             end) =~ "Failed to add error comment to pull '##{pull["number"]}'"
+    end
+
+    @tag merge_pull_result: :error
+    @tag label_issue_result: :error
+    test "it deals with labeling errors" do
+      pulls = [pull] = [pull_fixture()]
+
+      assert capture_log(fn ->
+               assert Pull.merge_pulls(pulls) == [{pull["number"], :pull_merge_error}]
+             end) =~ "Failed to add error label to pull '##{pull["number"]}'"
     end
   end
 
@@ -62,10 +88,30 @@ defmodule ScheduledMerge.Github.PullTest do
 
   defp setup_github_client(context) do
     stub =
-      stub(Github, :merge_pull, fn _pull ->
+      Github
+      |> stub(:merge_pull, fn _pull ->
         case context[:merge_pull_result] do
           nil -> :ok
-          :error -> {:error, {"a-pull-number", "there was an error merging the pull"}}
+          :error -> {:error, :error_reason}
+        end
+      end)
+      |> stub(:comment_issue, fn _issue, _message ->
+        case context[:comment_issue_result] do
+          nil -> :ok
+          :error -> {:error, :error_reason}
+        end
+      end)
+      |> stub(:label_issue, fn _issue, _label_name ->
+        case context[:label_issue_result] do
+          nil -> :ok
+          :error -> {:error, :error_reason}
+        end
+      end)
+      |> stub(:fetch_label, fn _label_name ->
+        case context[:fetch_label_result] do
+          nil -> {:ok, label_fixture("a-label")}
+          :error_label -> {:ok, label_fixture("error")}
+          :error -> {:error, :error_reason}
         end
       end)
 
