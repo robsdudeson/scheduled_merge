@@ -116,7 +116,7 @@ defmodule ScheduledMerge.Github.Client do
     do: [{"accept", "application/vnd.github+json"}, {"authorization", "Bearer #{api_token()}"}]
 
   defp resource_url(resource) do
-    "#{api_url()}/repos/#{org()}/#{repo()}#{resource}"
+    "#{api_url()}/repos/#{org()}/#{repo()}#{resource}" |> IO.inspect(label: "resource_url")
   end
 
   defp org do
