@@ -4,6 +4,8 @@ defmodule ScheduledMerge.Github.Client do
   """
   require Logger
 
+  alias ScheduledMerge.Github.Label
+
   def fetch_pulls do
     "/pulls"
     |> resource_url()
@@ -14,24 +16,18 @@ defmodule ScheduledMerge.Github.Client do
     end
   end
 
-  def merge_pull(%{"number" => number} = pull) do
+  def merge_pull(%{"number" => number}) do
     "/pulls/#{number}/merge"
     |> resource_url()
     |> HTTPoison.put!(headers())
     |> case do
       %{status_code: 200} -> :ok
-      %{status_code: 403} = response -> merge_pull_error(response, pull, :forbidden)
-      %{status_code: 404} = response -> merge_pull_error(response, pull, :not_found)
-      %{status_code: 405} = response -> merge_pull_error(response, pull, :method_not_allowed)
-      %{status_code: 409} = response -> merge_pull_error(response, pull, :sha_head_mismatch)
-      %{status_code: 422} = response -> merge_pull_error(response, pull, :request_invalid)
+      %{status_code: 403} -> {:error, :forbidden}
+      %{status_code: 404} -> {:error, :not_found}
+      %{status_code: 405} -> {:error, :method_not_allowed}
+      %{status_code: 409} -> {:error, :sha_head_mismatch}
+      %{status_code: 422} -> {:error, :request_invalid}
     end
-  end
-
-  defp merge_pull_error(response, %{"number" => number}, error) do
-    message = "there was an error merging the pull"
-    Logger.error("#{message}:#{number}:#{error}", response)
-    {:error, {number, message}}
   end
 
   def comment_issue(%{"number" => number}, comment) do
@@ -48,9 +44,9 @@ defmodule ScheduledMerge.Github.Client do
     end
   end
 
-  def label_issue(%{"number" => number}, label) do
+  def label_issue(%{"number" => number}, label_name) do
     body =
-      %{"labels" => [label]}
+      %{"labels" => [label_name]}
       |> Jason.encode!()
 
     "/issues/#{number}/labels"
@@ -58,6 +54,10 @@ defmodule ScheduledMerge.Github.Client do
     |> HTTPoison.post!(body, headers())
     |> case do
       %{status_code: 200} -> :ok
+      %{status_code: 301} -> {:error, :moved_permanently}
+      %{status_code: 404} -> {:error, :not_found}
+      %{status_code: 410} -> {:error, :gone}
+      %{status_code: 422} -> {:error, :request_invalid}
     end
   end
 
@@ -68,7 +68,9 @@ defmodule ScheduledMerge.Github.Client do
     |> resource_url()
     |> HTTPoison.post!(body, headers())
     |> case do
-      %{status_code: 200, body: body} -> Jason.decode!(body)
+      %{status_code: 201, body: body} -> {:ok, Jason.decode!(body)}
+      %{status_code: 404} -> {:error, :not_found}
+      %{status_code: 422} -> {:error, :request_invalid}
     end
   end
 
@@ -77,7 +79,7 @@ defmodule ScheduledMerge.Github.Client do
     |> resource_url()
     |> HTTPoison.get!(headers())
     |> case do
-      %{status_code: 200, body: body} -> Jason.decode!(body)
+      %{status_code: 200, body: body} -> {:ok, Jason.decode!(body)}
     end
   end
 
@@ -86,8 +88,8 @@ defmodule ScheduledMerge.Github.Client do
     |> resource_url()
     |> HTTPoison.get!(headers())
     |> case do
-      %{status_code: 200, body: body} -> Jason.decode!(body)
-      %{status_code: 404} -> nil
+      %{status_code: 200, body: body} -> {:ok, Jason.decode!(body)}
+      %{status_code: 404} -> {:error, :not_found}
     end
   end
 
@@ -114,7 +116,7 @@ defmodule ScheduledMerge.Github.Client do
     do: [{"accept", "application/vnd.github+json"}, {"authorization", "Bearer #{api_token()}"}]
 
   defp resource_url(resource) do
-    "#{api_url()}/repos/#{org()}/#{repo()}/#{resource}"
+    "#{api_url()}/repos/#{org()}/#{repo()}#{resource}"
   end
 
   defp org do
