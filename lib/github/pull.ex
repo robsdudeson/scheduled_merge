@@ -1,6 +1,6 @@
 defmodule ScheduledMerge.Github.Pull do
   @moduledoc """
-  Functions to mange pulls from GitHub
+  Functions to mange pulls from Github
   """
 
   require Logger
@@ -12,7 +12,7 @@ defmodule ScheduledMerge.Github.Pull do
 
   def merge_todays_pulls(date),
     do:
-      i(GitHub).fetch_pulls()
+      i(Github).fetch_pulls()
       |> present_pulls(date)
       |> merge_pulls()
 
