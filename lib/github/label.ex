@@ -2,7 +2,6 @@ defmodule ScheduledMerge.Github.Label do
   @moduledoc """
   Collection of functions to manage labels in github
   """
-
   require Logger
 
   import Inject, only: [i: 1]
@@ -38,6 +37,20 @@ defmodule ScheduledMerge.Github.Label do
   def merge_label(date) do
     date = Date.to_iso8601(date)
     %{"name" => "merge-#{date}", "color" => default_merge_color()}
+  end
+
+  def error_label() do
+    default_error_label()[:name]
+    |> i(Github).fetch_label()
+    |> case do
+      {:error, :not_found} ->
+        # we're failing on error here since we _need_ the label to exist
+        {:ok, error_label} = i(Github).create_label(default_error_label())
+        error_label
+
+      {:ok, error_label} ->
+        error_label
+    end
   end
 
   def past_labels(labels, date), do: Enum.filter(labels, &past_merge_label?(&1, date))
