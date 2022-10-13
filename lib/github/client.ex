@@ -4,8 +4,6 @@ defmodule ScheduledMerge.Github.Client do
   """
   require Logger
 
-  alias ScheduledMerge.Github.Label
-
   def fetch_pulls do
     "/pulls"
     |> resource_url()
@@ -116,11 +114,7 @@ defmodule ScheduledMerge.Github.Client do
     do: [{"accept", "application/vnd.github+json"}, {"authorization", "Bearer #{api_token()}"}]
 
   defp resource_url(resource) do
-    "#{api_url()}/repos/#{org()}/#{repo()}#{resource}"
-  end
-
-  defp org do
-    Application.get_env(:scheduled_merge, :github)[:org]
+    "#{api_url()}/repos/#{repo()}#{resource}"
   end
 
   defp repo do
