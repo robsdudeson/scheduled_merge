@@ -75,11 +75,8 @@ defmodule ScheduledMerge.Github.Client do
   end
 
   def fetch_labels do
-    IO.inspect(headers())
-
     "/labels"
     |> resource_url()
-    |> IO.inspect!()
     |> HTTPoison.get!(headers())
     |> case do
       %{status_code: 200, body: body} -> {:ok, Jason.decode!(body)}
