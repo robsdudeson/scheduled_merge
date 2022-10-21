@@ -1,16 +1,14 @@
 defmodule ScheduledMerge.Github.PullTest do
   use ExUnit.Case
+  use ScheduledMerge.Support.Stubs
 
   import ExUnit.CaptureLog, only: [capture_log: 1]
-  import Double, only: [stub: 3]
-  import Inject, only: [register: 2]
   import ScheduledMerge.Support.Fixtures
 
-  alias ScheduledMerge.Github.Client, as: Github
   alias ScheduledMerge.Github.Pull
 
   describe "merge_pulls/1" do
-    setup [:setup_github_client]
+    setup [:github_client]
 
     test "it will merge a pull" do
       pulls = [pull] = [pull_fixture()]
@@ -86,39 +84,5 @@ defmodule ScheduledMerge.Github.PullTest do
 
       assert Pull.present_pulls(pulls, date) == pulls
     end
-  end
-
-  defp setup_github_client(context) do
-    stub =
-      Github
-      |> stub(:merge_pull, fn _pull ->
-        case context[:merge_pull_result] do
-          nil -> :ok
-          :error -> {:error, :error_reason}
-        end
-      end)
-      |> stub(:comment_issue, fn _issue, _message ->
-        case context[:comment_issue_result] do
-          nil -> :ok
-          :error -> {:error, :error_reason}
-        end
-      end)
-      |> stub(:label_issue, fn _issue, _label_name ->
-        case context[:label_issue_result] do
-          nil -> :ok
-          :error -> {:error, :error_reason}
-        end
-      end)
-      |> stub(:fetch_label, fn _label_name ->
-        case context[:fetch_label_result] do
-          nil -> {:ok, label_fixture("a-label")}
-          :error_label -> {:ok, label_fixture("error")}
-          :error -> {:error, :error_reason}
-        end
-      end)
-
-    register(Github, stub)
-
-    []
   end
 end
