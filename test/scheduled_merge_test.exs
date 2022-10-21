@@ -1,15 +1,10 @@
 defmodule ScheduledMergeTest do
   use ExUnit.Case
-
-  import Double, only: [stub: 3]
-  import Inject, only: [register: 2]
-
-  alias ScheduledMerge.Github.Label
-  alias ScheduledMerge.Github.Pull
+  use ScheduledMerge.Support.Stubs
 
   doctest ScheduledMerge
 
-  setup [:setup_label, :setup_pull]
+  setup [:label_stub, :pull_stub]
 
   describe "run/1" do
     test "it cleans old labels" do
@@ -33,33 +28,5 @@ defmodule ScheduledMergeTest do
       assert ScheduledMerge.run() == {:error, [{999, :pull_merge_error}]}
       assert_received {ScheduledMerge.Github.Pull, :merge_todays_pulls, _}
     end
-  end
-
-  defp setup_label(context) do
-    stub =
-      stub(Label, :delete_past_labels, fn _date ->
-        case context[:delete_past_labels_result] do
-          :error -> [{"a-label-name", :label_delete_error}]
-          nil -> []
-        end
-      end)
-
-    register(Label, stub)
-
-    []
-  end
-
-  defp setup_pull(context) do
-    stub =
-      stub(Pull, :merge_todays_pulls, fn _date ->
-        case context[:merge_todays_pulls_result] do
-          :error -> [{999, :pull_merge_error}]
-          nil -> []
-        end
-      end)
-
-    register(Pull, stub)
-
-    []
   end
 end

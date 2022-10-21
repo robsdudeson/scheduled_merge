@@ -1,16 +1,27 @@
 defmodule ScheduledMerge.Github.LabelTest do
   use ExUnit.Case
+  use ScheduledMerge.Support.Stubs
 
   import ExUnit.CaptureLog, only: [capture_log: 1]
-  import Double, only: [stub: 3]
-  import Inject, only: [register: 2]
   import ScheduledMerge.Support.Fixtures
 
-  alias ScheduledMerge.Github.Client, as: Github
   alias ScheduledMerge.Github.Label
 
+  describe "delete_past_labels/1" do
+    setup [:github_client_stub]
+
+    @tag fetch_labels_result: :error
+    test "it invokes adapter to fetch labels, the adapter returns an error" do
+      date = Date.from_iso8601!("2022-01-01")
+
+      assert_raise FunctionClauseError, fn ->
+        assert Label.delete_past_labels(date) == [{"test-label", :label_delete_error}]
+      end
+    end
+  end
+
   describe "delete_labels/1" do
-    setup [:setup_github_client]
+    setup [:github_client_stub]
 
     setup _ do
       [label: label_fixture("test-label")]
@@ -68,6 +79,13 @@ defmodule ScheduledMerge.Github.LabelTest do
       refute Label.past_merge_label?(label, date)
     end
 
+    test "when a label is the expected error label" do
+      label = label_fixture("merge-failed")
+      date = Date.from_iso8601!("2022-01-01")
+
+      refute Label.past_merge_label?(label, date)
+    end
+
     test "when a label is merge but not a valid iso8601 date" do
       label = label_fixture("merge-bad-iso")
       date = Date.from_iso8601!("2022-01-01")
@@ -119,19 +137,5 @@ defmodule ScheduledMerge.Github.LabelTest do
                      Label.past_merge_label?(label, date)
                    end
     end
-  end
-
-  defp setup_github_client(context) do
-    stub =
-      stub(Github, :delete_label, fn _label ->
-        case context[:delete_label_result] do
-          nil -> :ok
-          :error -> {:error, {"a-label-name", "there was an error deleting the label"}}
-        end
-      end)
-
-    register(Github, stub)
-
-    []
   end
 end
