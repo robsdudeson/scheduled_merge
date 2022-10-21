@@ -8,7 +8,7 @@ config :scheduled_merge,
   ],
   labels: [
     default_error_label: %{
-      name: "merge-error",
+      name: "merge-failed",
       color: "FF0000",
       description: "indicates when scheduled merge does not work"
     },

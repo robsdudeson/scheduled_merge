@@ -30,10 +30,12 @@ defmodule ScheduledMerge.Github.PullTest do
 
       assert_received {ScheduledMerge.Github.Client, :merge_pull, [^pull]}
 
+      assert_received {ScheduledMerge.Github.Client, :fetch_label, ["merge-failed"]}
+
       assert_received {ScheduledMerge.Github.Client, :comment_issue,
                        [^pull, ^expected_error_message]}
 
-      assert_received {ScheduledMerge.Github.Client, :label_issue, [^pull]}
+      assert_received {ScheduledMerge.Github.Client, :label_issue, [^pull, "a-label"]}
     end
 
     @tag merge_pull_result: :error

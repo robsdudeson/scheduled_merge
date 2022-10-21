@@ -68,6 +68,13 @@ defmodule ScheduledMerge.Github.LabelTest do
       refute Label.past_merge_label?(label, date)
     end
 
+    test "when a label is the expected error label" do
+      label = label_fixture("merge-failed")
+      date = Date.from_iso8601!("2022-01-01")
+
+      refute Label.past_merge_label?(label, date)
+    end
+
     test "when a label is merge but not a valid iso8601 date" do
       label = label_fixture("merge-bad-iso")
       date = Date.from_iso8601!("2022-01-01")
