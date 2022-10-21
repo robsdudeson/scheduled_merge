@@ -4,9 +4,12 @@ defmodule ScheduledMerge.Support.Stubs do
       import Double, only: [stub: 3]
       import Inject, only: [register: 2]
       import ScheduledMerge.Support.Fixtures
-      alias ScheduledMerge.Github.Client, as: Github
 
-      def github_client(context) do
+      alias ScheduledMerge.Github.Client, as: Github
+      alias ScheduledMerge.Github.Label
+      alias ScheduledMerge.Github.Pull
+
+      def github_client_stub(context) do
         stub =
           Github
           |> stub(:comment_issue, fn _issue, _message ->
@@ -42,6 +45,34 @@ defmodule ScheduledMerge.Support.Stubs do
           end)
 
         register(Github, stub)
+
+        []
+      end
+
+      defp label_stub(context) do
+        stub =
+          stub(Label, :delete_past_labels, fn _date ->
+            case context[:delete_past_labels_result] do
+              :error -> [{"a-label-name", :label_delete_error}]
+              nil -> []
+            end
+          end)
+
+        register(Label, stub)
+
+        []
+      end
+
+      defp pull_stub(context) do
+        stub =
+          stub(Pull, :merge_todays_pulls, fn _date ->
+            case context[:merge_todays_pulls_result] do
+              :error -> [{999, :pull_merge_error}]
+              nil -> []
+            end
+          end)
+
+        register(Pull, stub)
 
         []
       end

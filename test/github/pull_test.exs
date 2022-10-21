@@ -8,7 +8,7 @@ defmodule ScheduledMerge.Github.PullTest do
   alias ScheduledMerge.Github.Pull
 
   describe "merge_pulls/1" do
-    setup [:github_client]
+    setup [:github_client_stub]
 
     test "it will merge a pull" do
       pulls = [pull] = [pull_fixture()]

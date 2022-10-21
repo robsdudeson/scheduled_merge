@@ -8,7 +8,7 @@ defmodule ScheduledMerge.Github.LabelTest do
   alias ScheduledMerge.Github.Label
 
   describe "delete_labels/1" do
-    setup [:github_client]
+    setup [:github_client_stub]
 
     setup _ do
       [label: label_fixture("test-label")]
