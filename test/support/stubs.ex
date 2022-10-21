@@ -31,6 +31,13 @@ defmodule ScheduledMerge.Support.Stubs do
               :error -> {:error, :error_reason}
             end
           end)
+          |> stub(:fetch_labels, fn ->
+            case context[:fetch_labels_result] do
+              nil -> {:ok, [label_fixture("a-label")]}
+              :error_label -> {:ok, label_fixture("error")}
+              :error -> {:error, :error_reason}
+            end
+          end)
           |> stub(:label_issue, fn _issue, _label_name ->
             case context[:label_issue_result] do
               nil -> :ok

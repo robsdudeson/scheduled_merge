@@ -7,6 +7,19 @@ defmodule ScheduledMerge.Github.LabelTest do
 
   alias ScheduledMerge.Github.Label
 
+  describe "delete_past_labels/1" do
+    setup [:github_client_stub]
+
+    @tag fetch_labels_result: :error
+    test "it invokes adapter to fetch labels, the adapter returns an error" do
+      date = Date.from_iso8601!("2022-01-01")
+
+      assert_raise FunctionClauseError, fn ->
+        assert Label.delete_past_labels(date) == [{"test-label", :label_delete_error}]
+      end
+    end
+  end
+
   describe "delete_labels/1" do
     setup [:github_client_stub]
 

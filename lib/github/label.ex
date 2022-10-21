@@ -53,8 +53,7 @@ defmodule ScheduledMerge.Github.Label do
     end
   end
 
-  # TODO: robsdudeson - fix the interface for labels (update tests)
-  def past_labels(labels, date), do: Enum.filter(labels, &past_merge_label?(&1, date))
+  def past_labels({:ok, labels}, date), do: Enum.filter(labels, &past_merge_label?(&1, date))
 
   def past_merge_label?(%{"name" => "merge-failed"}, _date), do: false
 
