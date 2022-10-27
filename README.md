@@ -4,6 +4,16 @@ Will attempt to merge Pull Requests with the appropriate labels on a given date
 
 ## Development
 
+### Local Setup
+
+- install [asdf](https://github.com/asdf-vm/asdf) (or a version manager of your choice)
+- install erlang
+  - [asdf-erlang](https://github.com/asdf-vm/asdf-erlang)
+- install elixir.
+  - [elixir-asdf](https://github.com/asdf-vm/asdf-elixir)
+- run [tests](./script/test) while developing
+- (optional) set-up pre-push hooks
+
 ### Scripts to Rule Them All
 
 - [test](./script/test) will run linters and tests
