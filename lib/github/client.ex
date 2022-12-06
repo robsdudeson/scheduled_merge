@@ -38,9 +38,13 @@ defmodule ScheduledMerge.Github.Client do
 
     "/issues/#{number}/comments"
     |> resource_url()
-    |> HTTPoison.post!(body, headers())
+    |> i(HTTPoison).post!(body, headers())
     |> case do
       %{status_code: 201} -> :ok
+      %{status_code: 403} -> {:error, :forbidden}
+      %{status_code: 404} -> {:error, :not_found}
+      %{status_code: 410} -> {:error, :gone}
+      %{status_code: 422} -> {:error, :request_invalid}
     end
   end
 
