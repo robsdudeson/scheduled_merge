@@ -4,10 +4,12 @@ defmodule ScheduledMerge.Github.Client do
   """
   require Logger
 
+  import Inject, only: [i: 1]
+
   def fetch_pulls do
     "/pulls"
     |> resource_url()
-    |> HTTPoison.get!(headers())
+    |> i(HTTPoison).get!(headers())
     |> case do
       %{status_code: 200, body: body} ->
         Jason.decode!(body)
@@ -114,7 +116,7 @@ defmodule ScheduledMerge.Github.Client do
     do: [{"accept", "application/vnd.github+json"}, {"authorization", "Bearer #{api_token()}"}]
 
   defp resource_url(resource) do
-    "#{api_url()}/repos#{repo()}#{resource}"
+    "#{api_url()}/repos/#{repo()}#{resource}"
   end
 
   defp repo do
