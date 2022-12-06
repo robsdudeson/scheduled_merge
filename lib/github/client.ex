@@ -19,7 +19,7 @@ defmodule ScheduledMerge.Github.Client do
   def merge_pull(%{"number" => number}) do
     "/pulls/#{number}/merge"
     |> resource_url()
-    |> HTTPoison.put!("", headers())
+    |> i(HTTPoison).put!("", headers())
     |> case do
       %{status_code: 200} -> :ok
       %{status_code: 403} -> {:error, :forbidden}
